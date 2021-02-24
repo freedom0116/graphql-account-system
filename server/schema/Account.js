@@ -1,11 +1,7 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 
-const UserSchema = new Schema({
-    id: {
-        type: Schema.Types.ObjectId,
-        required: true
-    },
+const AccountSchema = new Schema({
     name: {
         type: String,
         required: true
@@ -21,12 +17,16 @@ const UserSchema = new Schema({
     img: {
         type: String
     },
-    last_active: {
+    lastActive: {
         type: String,
         required: true
     },
-    create_date: {
+    createDate: {
         type: String,
         required: true
     },
 })
+
+const Account = mongoose.model('account', AccountSchema)
+
+module.exports = Account

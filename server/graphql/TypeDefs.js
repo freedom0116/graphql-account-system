@@ -2,26 +2,34 @@ import { gql } from 'apollo-server'
 
 export const typeDefs = gql`
     type Query {
-        hello(name: String): String 
+        account(email: String): [Account]
     }
 
     type Mutation {
-        createAccount(data: CreateUserInput!): User!
+        createAccount(data: CreateAccountInput!): Account!
+        deleteAccount(_id: ID!): String!
+        updateAccount(_id: ID!, data: UpdateAccountInput): String!
     }
 
-    input CreateUserInput {
+    input CreateAccountInput {
         name: String!
         email: String!
         password: String!
     }
 
-    type User {
-        id: ID!
+    input UpdateAccountInput {
+        name: String
+        email: String
+        password: String
+    }
+
+    type Account {
+        _id: ID!
         name: String!
         email: String!
         password: String!
         img: String
-        last_active: String!
-        create_date: String!
+        lastActive: String!
+        createDate: String!
     }
 `;
