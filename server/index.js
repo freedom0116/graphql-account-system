@@ -1,6 +1,6 @@
+require('dotenv-defaults').config()
 import { ApolloServer, PubSub } from 'apollo-server'
 import mongoose from 'mongoose'
-require('dotenv-defaults').config()
 
 import { resolvers } from './graphql/resolvers'
 import { typeDefs } from './graphql/TypeDefs'
