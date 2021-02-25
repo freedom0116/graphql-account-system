@@ -1,4 +1,4 @@
-import { gql } from 'apollo-server'
+import { gql } from 'apollo-server-express'
 
 export const typeDefs = gql`
     type Query {
@@ -11,6 +11,7 @@ export const typeDefs = gql`
         updateAccount(id: ID!, data: UpdateAccountInput): String!
         login(data: LoginInput): AccountOutput!
         logout(id: ID!): String!
+        checkToken(token: String!): String!
     }
 
     input CreateAccountInput {
@@ -20,8 +21,6 @@ export const typeDefs = gql`
     }
 
     type AccountOutput {
-        status: Boolean!
-        info: String
         accessToken: String
         refreshToken: String
     }

@@ -1,16 +1,18 @@
 require('dotenv-defaults').config()
-import { ApolloServer, PubSub } from 'apollo-server'
+import { ApolloServer, PubSub } from 'apollo-server-express'
 import mongoose from 'mongoose'
+import express from 'express'
 
 import { resolvers } from './graphql/resolvers'
 import { typeDefs } from './graphql/TypeDefs'
+import authToken from './middleware/authToken'
+
+const pubsub = new PubSub();
 
 const startServer = async () => {
-
     const server = new ApolloServer({ 
         typeDefs, 
-        resolvers,
-        context: { PubSub }
+        resolvers       
     })
 
     if (!process.env.MONGO_URL) {
@@ -28,7 +30,13 @@ const startServer = async () => {
     db.on('error', error => console.error('connection error', error))
     db.once('open', () => console.log('Connected to MongoDB'))
 
-    server.listen({ port: process.env.PORT | 4000 }, () => {
+    const app = express();
+
+    app.use(authToken)
+
+    server.applyMiddleware({ app, path: '/' })
+
+    app.listen({ port: process.env.PORT | 4000 }, () => {
         console.log(`The server is up on port ${process.env.PORT | 4000}!`)
     })
 }

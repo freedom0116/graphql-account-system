@@ -14,10 +14,7 @@ const Mutation = {
     const emailTaken = await Account.findOne({ email: data.email })
     
     if(emailTaken){
-      result.status = false
-      result.info = 'Email has been used'
-
-      return result
+      throw new Error('Email has been used')
     }
 
     const id = cryptoRandomString({ length: 10 })
@@ -36,21 +33,23 @@ const Mutation = {
     }
 
     const newAccount = new Account(accountData)
-
     await newAccount.save()
 
-    result.status = true
     result.accessToken = accessToken
     result.refreshToken = refreshToken
 
     return result
   },
   deleteAccount: async (parent, { id }, context, info) => {
-    await Account.remove({ id: id })
+    const del = await Account.remove({ id: id })
+    
+    if(!del.deletedCount){
+      throw new Error('Account not found')
+    }
 
     return 'delete'
   },
-  updateAccount: async (parent, { _id, data }, context, info) => {
+  updateAccount: async (parent, { id, data }, context, info) => {
     const password = bcrypt.hashSync(data.password, saltRounds)
 
     const updateData = {
@@ -66,20 +65,28 @@ const Mutation = {
   login: async (parent, { data }, context, info) => {
     const result = {}
     const account = await Account.findOne({ email: data.email })
+    
+    if(!account){
+      throw new Error('Please check your Email or password again')
+    }
+
     const passwordCheck = await bcrypt.compare(data.password, account.password)
 
     if(!passwordCheck){
-      result.status = false
-      result.info = 'Wrong password'
-
-      return result
+      throw new Error('Please check your Email or password again')
     }
-    
-    result.status = true
-    result.accessToken = jwt.sign({ id: account.id }, ACCESS_TOKEN_KEY, { expiresIn: '15s' })
+
+    result.accessToken = jwt.sign({ id: account.id }, ACCESS_TOKEN_KEY, { expiresIn: '15min' })
     result.refreshToken = jwt.sign({ id: account.id }, REFRESH_TOKEN_KEY)  
 
     return result
+  },
+  checkToken: (parent, { token }, context, info) => {
+    console.log(context)
+    const output = jwt.verify(token, ACCESS_TOKEN_KEY);
+    console.log(output)
+
+    return "OK"
   }
 }
 
