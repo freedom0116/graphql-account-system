@@ -63,7 +63,6 @@ const Mutation = {
     return 'updated'
   },
   login: async (parent, { data }, context, info) => {
-    const result = {}
     const account = await Account.findOne({ email: data.email })
     
     if(!account){
@@ -75,14 +74,15 @@ const Mutation = {
     if(!passwordCheck){
       throw new Error('Please check your Email or password again')
     }
-
+    
+    const result = {}
     result.accessToken = jwt.sign({ id: account.id }, ACCESS_TOKEN_KEY, { expiresIn: '15min' })
     result.refreshToken = jwt.sign({ id: account.id }, REFRESH_TOKEN_KEY)  
 
     return result
   },
   checkToken: (parent, { token }, context, info) => {
-    console.log(context)
+    console.log(context.req.token)
     const output = jwt.verify(token, ACCESS_TOKEN_KEY);
     console.log(output)
 

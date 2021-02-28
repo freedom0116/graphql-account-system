@@ -12,7 +12,8 @@ const pubsub = new PubSub();
 const startServer = async () => {
     const server = new ApolloServer({ 
         typeDefs, 
-        resolvers       
+        resolvers,
+        context: ({ req, res }) => ({ req, res }) 
     })
 
     if (!process.env.MONGO_URL) {
