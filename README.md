@@ -14,16 +14,12 @@ Finally, after cloning the repository, running `yarn` & `yarn start`, and naviga
 
 ## Reference
 
-[Refresh Tokens: When to Use Them and How They Interact with JWTs](https://auth0.com/blog/efresh-tokens-what-are-they-and-when-to-use-them/)
+ * [Refresh Tokens: When to Use Them and How They Interact with JWTs](https://auth0.com/blog/efresh-tokens-what-are-they-and-when-to-use-them/)
 
-[The Ultimate Guide to handling JWTs on frontend clients (GraphQL)](https://hasura.io/blog/best-practices-of-using-jwt-with-graphql/#refresh_token_persistance)
+ * [The Ultimate Guide to handling JWTs on frontend clients (GraphQL)](https://hasura.io/blog/best-practices-of-using-jwt-with-graphql/#refresh_token_persistance)
 
-[Cookie、LocalStorage、SessionStorage 差異](https://medium.com/@bebebobohaha/cookie-localstorage-sessionstorage-%E5%B7%AE%E7%95%B0-9e1d5df3dd7f)
+ * [Comparision among Cookie, LocalStorage, and SessionStorage](https://medium.com/@bebebobohaha/cookie-localstorage-sessionstorage-%E5%B7%AE%E7%95%B0-9e1d5df3dd7f)
 
-[GraphQL設計: Autentication與Authorization大全](https://ithelp.ithome.com.tw/articles/10208278)
+ * [GraphQL tutorial](https://github.com/ian13456/modern-graphql-tutorial)
 
-[Youtube tutorial: JWT Authetication Tutorial](https://www.youtube.com/watch?v=mbsmsi7l3r4&ab_channel=WebDevSimplified)
-
-[ian13456/modern-graphql-tutorial](https://github.com/ian13456/modern-graphql-tutorial)
-
-
+ * [Youtube tutorial: JWT Authetication Tutorial](https://www.youtube.com/watch?v=mbsmsi7l3r4&ab_channel=WebDevSimplified)
