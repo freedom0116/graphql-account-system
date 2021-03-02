@@ -7,11 +7,10 @@ export const typeDefs = gql`
 
     type Mutation {
         createAccount(data: CreateAccountInput!): AccountOutput!
-        deleteAccount(id: ID!): String!
-        updateAccount(id: ID!, data: UpdateAccountInput): String!
+        deleteAccount: String!
+        updateAccount(data: UpdateAccountInput): String!
         login(data: LoginInput): AccountOutput!
-        logout(id: ID!): String!
-        checkToken(token: String!): String!
+        logout: String!
     }
 
     input CreateAccountInput {

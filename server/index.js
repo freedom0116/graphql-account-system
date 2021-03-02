@@ -2,18 +2,34 @@ require('dotenv-defaults').config()
 import { ApolloServer, PubSub } from 'apollo-server-express'
 import mongoose from 'mongoose'
 import express from 'express'
+import cookieParser from 'cookie-parser'
+import jwt from 'jsonwebtoken'
 
 import { resolvers } from './graphql/resolvers'
 import { typeDefs } from './graphql/TypeDefs'
-import authToken from './middleware/authToken'
 
-const pubsub = new PubSub();
+const ACCESS_TOKEN_KEY =  process.env.ACCESS_TOKEN_KEY
+const pubsub = new PubSub()
 
 const startServer = async () => {
+    const app = express();
+
     const server = new ApolloServer({ 
         typeDefs, 
         resolvers,
         context: ({ req, res }) => ({ req, res }) 
+    })
+
+    app.use(cookieParser())
+
+    app.use((req, _, next) => {
+        try{
+            const accessToken = req.cookies['access-token']
+            const data = jwt.verify(accessToken, ACCESS_TOKEN_KEY)
+            req.id = data.id
+        }catch{}
+
+        next()
     })
 
     if (!process.env.MONGO_URL) {
@@ -28,12 +44,8 @@ const startServer = async () => {
 
     const db = mongoose.connection
 
-    db.on('error', error => console.error('connection error', error))
+    db.on('error', error => console.error('Connection error', error))
     db.once('open', () => console.log('Connected to MongoDB'))
-
-    const app = express();
-
-    app.use(authToken)
 
     server.applyMiddleware({ app, path: '/' })
 

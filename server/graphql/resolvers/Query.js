@@ -1,7 +1,7 @@
 import Account from '../../schema/Account'
 
 const Query = {
-  account: async (parent, { email }, context, info) => {    
+  account: async (parent, { email }, { req }, info) => {
     if(!email){
       return await Account.find().limit(20).sort({ id: 1 })
     }

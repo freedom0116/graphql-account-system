@@ -14,7 +14,7 @@ Finally, after cloning the repository, running `yarn` & `yarn start`, and naviga
 
 ## Reference
 
- * [Refresh Tokens: When to Use Them and How They Interact with JWTs](https://auth0.com/blog/efresh-tokens-what-are-they-and-when-to-use-them/)
+ * [Refresh Tokens: When to Use Them and How They Interact with JWTs](https://auth0.com/blog/refresh-tokens-what-are-they-and-when-to-use-them/)
 
  * [The Ultimate Guide to handling JWTs on frontend clients (GraphQL)](https://hasura.io/blog/best-practices-of-using-jwt-with-graphql/#refresh_token_persistance)
 

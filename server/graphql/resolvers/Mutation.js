@@ -3,6 +3,7 @@ import Account from '../../schema/Account'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import cryptoRandomString from 'crypto-random-string'
+import { AuthenticationError } from 'apollo-server-express'
 
 const saltRounds = 10
 const ACCESS_TOKEN_KEY =  process.env.ACCESS_TOKEN_KEY
@@ -10,7 +11,6 @@ const REFRESH_TOKEN_KEY = process.env.REFRESH_TOKEN_KEY
 
 const Mutation = {
   createAccount: async (parent, { data }, context, info) => {
-    const result = {}
     const emailTaken = await Account.findOne({ email: data.email })
     
     if(emailTaken){
@@ -35,13 +35,17 @@ const Mutation = {
     const newAccount = new Account(accountData)
     await newAccount.save()
 
+    const result = {}
     result.accessToken = accessToken
     result.refreshToken = refreshToken
 
+    res.cookie('access-token', result.accessToken)
+    res.cookie('refresh-token', result.refreshToken)
+
     return result
   },
-  deleteAccount: async (parent, { id }, context, info) => {
-    const del = await Account.remove({ id: id })
+  deleteAccount: async (parent, args, { req }, info) => {
+    const del = await Account.remove({ id: req.id })
     
     if(!del.deletedCount){
       throw new Error('Account not found')
@@ -49,7 +53,7 @@ const Mutation = {
 
     return 'delete'
   },
-  updateAccount: async (parent, { id, data }, context, info) => {
+  updateAccount: async (parent, { data }, { req }, info) => {
     const password = bcrypt.hashSync(data.password, saltRounds)
 
     const updateData = {
@@ -58,11 +62,15 @@ const Mutation = {
       password: password
     }
 
-    await Account.updateOne({ id: id }, updateData)
+    const update = await Account.updateOne({ id: req.id }, updateData)
+console.log(update)
+    if(!update.nModified){
+      throw new Error('Account not found')
+    }
 
     return 'updated'
   },
-  login: async (parent, { data }, context, info) => {
+  login: async (parent, { data }, { res }, info) => {
     const account = await Account.findOne({ email: data.email })
     
     if(!account){
@@ -76,17 +84,34 @@ const Mutation = {
     }
     
     const result = {}
-    result.accessToken = jwt.sign({ id: account.id }, ACCESS_TOKEN_KEY, { expiresIn: '15min' })
-    result.refreshToken = jwt.sign({ id: account.id }, REFRESH_TOKEN_KEY)  
+    result.accessToken = jwt.sign({ id: account.id }, ACCESS_TOKEN_KEY, { expiresIn: '15s' })
+    result.refreshToken = jwt.sign({ id: account.id }, REFRESH_TOKEN_KEY, { expiresIn: '7d' })  
+
+    await Account.updateOne({ id: account.id }, { token: result.refreshToken })
+
+    res.cookie('access-token', result.accessToken)
+    res.cookie('refresh-token', result.refreshToken)
 
     return result
-  },
-  checkToken: (parent, { token }, context, info) => {
-    console.log(context.req.token)
-    const output = jwt.verify(token, ACCESS_TOKEN_KEY);
-    console.log(output)
+  }, 
+  logout:  async (parent, args, { req, res }, info) => {
+    const refreshToken = req.cookies['refresh-token']
+    const account = await Account.findOne({ id: req.id })
+    
+    if(!account){
+      throw new Error('Account not found')
+    }
 
-    return "OK"
+    if(account.token === '' || account.token != refreshToken){
+      throw new AuthenticationError('Token expired or wrong token')
+    }
+
+    await Account.updateOne({ id: req.id }, { token: '' })
+    
+    res.clearCookie('access-token')
+    res.clearCookie('refresh-token')
+
+    return refreshToken
   }
 }
 
