@@ -7,6 +7,7 @@ import jwt from 'jsonwebtoken'
 
 import { resolvers } from './graphql/resolvers'
 import { typeDefs } from './graphql/TypeDefs'
+import verifyToken from './middleware/verifyToken'
 
 const ACCESS_TOKEN_KEY =  process.env.ACCESS_TOKEN_KEY
 const pubsub = new PubSub()
@@ -22,13 +23,14 @@ const startServer = async () => {
 
     app.use(cookieParser())
 
-    app.use((req, _, next) => {
+    app.use((req, res, next) => {
         try{
+            console.log(req.cookies)
             const accessToken = req.cookies['access-token']
             const data = jwt.verify(accessToken, ACCESS_TOKEN_KEY)
             req.id = data.id
         }catch{}
-
+        
         next()
     })
 

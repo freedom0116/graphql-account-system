@@ -5,12 +5,14 @@ import jwt from 'jsonwebtoken'
 import cryptoRandomString from 'crypto-random-string'
 import { AuthenticationError } from 'apollo-server-express'
 
+import generateToken from '../../middleware/generateToken'
+
 const saltRounds = 10
 const ACCESS_TOKEN_KEY =  process.env.ACCESS_TOKEN_KEY
 const REFRESH_TOKEN_KEY = process.env.REFRESH_TOKEN_KEY
 
 const Mutation = {
-  createAccount: async (parent, { data }, context, info) => {
+  createAccount: async (parent, { data }, { res }, info) => {
     const emailTaken = await Account.findOne({ email: data.email })
     
     if(emailTaken){
@@ -19,8 +21,7 @@ const Mutation = {
 
     const id = cryptoRandomString({ length: 10 })
     const password = bcrypt.hashSync(data.password, saltRounds)
-    const accessToken = jwt.sign({ id: id }, ACCESS_TOKEN_KEY, { expiresIn: '15s' })
-    const refreshToken = jwt.sign({ id: id }, REFRESH_TOKEN_KEY)  
+    const result = generateToken(account.id, res) 
 
     const accountData = {
       id: id,
@@ -29,27 +30,19 @@ const Mutation = {
       password: password,
       lastActive: onTime(),
       createDate: onTime(),
-      token: refreshToken
+      token: result.refreshToken
     }
 
     const newAccount = new Account(accountData)
     await newAccount.save()
 
-    const result = {}
-    result.accessToken = accessToken
-    result.refreshToken = refreshToken
-
-    res.cookie('access-token', result.accessToken)
-    res.cookie('refresh-token', result.refreshToken)
-
     return result
   },
   deleteAccount: async (parent, args, { req }, info) => {
     const del = await Account.remove({ id: req.id })
-    
-    if(!del.deletedCount){
+
+    if(!del.deletedCount) 
       throw new Error('Account not found')
-    }
 
     return 'delete'
   },
@@ -63,48 +56,35 @@ const Mutation = {
     }
 
     const update = await Account.updateOne({ id: req.id }, updateData)
-console.log(update)
-    if(!update.nModified){
+
+    if(!update.nModified)
       throw new Error('Account not found')
-    }
 
     return 'updated'
   },
-  login: async (parent, { data }, { res }, info) => {
+  login: async (parent, { data }, { req, res }, info) => {
     const account = await Account.findOne({ email: data.email })
-    
-    if(!account){
-      throw new Error('Please check your Email or password again')
-    }
-
     const passwordCheck = await bcrypt.compare(data.password, account.password)
 
-    if(!passwordCheck){
+    if(!passwordCheck)
       throw new Error('Please check your Email or password again')
-    }
+
+    req.id = account.id
     
-    const result = {}
-    result.accessToken = jwt.sign({ id: account.id }, ACCESS_TOKEN_KEY, { expiresIn: '15s' })
-    result.refreshToken = jwt.sign({ id: account.id }, REFRESH_TOKEN_KEY, { expiresIn: '7d' })  
-
+    const result = generateToken(req, res)
     await Account.updateOne({ id: account.id }, { token: result.refreshToken })
-
-    res.cookie('access-token', result.accessToken)
-    res.cookie('refresh-token', result.refreshToken)
-
+    
     return result
   }, 
-  logout:  async (parent, args, { req, res }, info) => {
+  logout: async (parent, args, { req, res }, info) => {
     const refreshToken = req.cookies['refresh-token']
     const account = await Account.findOne({ id: req.id })
     
-    if(!account){
+    if(!account)
       throw new Error('Account not found')
-    }
 
-    if(account.token === '' || account.token != refreshToken){
+    if(account.token === '' || account.token != refreshToken)
       throw new AuthenticationError('Token expired or wrong token')
-    }
 
     await Account.updateOne({ id: req.id }, { token: '' })
     
