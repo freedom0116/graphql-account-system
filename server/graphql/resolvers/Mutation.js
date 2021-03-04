@@ -8,16 +8,11 @@ import { AuthenticationError } from 'apollo-server-express'
 import generateToken from '../../middleware/generateToken'
 
 const saltRounds = 10
-const ACCESS_TOKEN_KEY =  process.env.ACCESS_TOKEN_KEY
-const REFRESH_TOKEN_KEY = process.env.REFRESH_TOKEN_KEY
 
 const Mutation = {
   createAccount: async (parent, { data }, { res }, info) => {
-    const emailTaken = await Account.findOne({ email: data.email })
-    
-    if(emailTaken){
-      throw new Error('Email has been used')
-    }
+    const emailTaken = await Account.findOne({ email: data.email })    
+    if(emailTaken) throw new Error('Email has been used')
 
     const id = cryptoRandomString({ length: 10 })
     const password = bcrypt.hashSync(data.password, saltRounds)
@@ -40,9 +35,7 @@ const Mutation = {
   },
   deleteAccount: async (parent, args, { req }, info) => {
     const del = await Account.remove({ id: req.id })
-
-    if(!del.deletedCount) 
-      throw new Error('Account not found')
+    if(!del.deletedCount) throw new Error('Account not found')
 
     return 'delete'
   },
@@ -56,18 +49,14 @@ const Mutation = {
     }
 
     const update = await Account.updateOne({ id: req.id }, updateData)
-
-    if(!update.nModified)
-      throw new Error('Account not found')
+    if(!update.nModified) throw new Error('Account not found')
 
     return 'updated'
   },
   login: async (parent, { data }, { req, res }, info) => {
     const account = await Account.findOne({ email: data.email })
     const passwordCheck = await bcrypt.compare(data.password, account.password)
-
-    if(!passwordCheck)
-      throw new Error('Please check your Email or password again')
+    if(!passwordCheck) throw new Error('Please check your Email or password again')
 
     req.id = account.id
     
@@ -78,10 +67,8 @@ const Mutation = {
   }, 
   logout: async (parent, args, { req, res }, info) => {
     const refreshToken = req.cookies['refresh-token']
-    const account = await Account.findOne({ id: req.id })
-    
-    if(!account)
-      throw new Error('Account not found')
+    const account = await Account.findOne({ id: req.id })    
+    if(!account)throw new Error('Account not found')
 
     if(account.token === '' || account.token != refreshToken)
       throw new AuthenticationError('Token expired or wrong token')
