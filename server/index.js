@@ -18,7 +18,7 @@ const startServer = async () => {
     const server = new ApolloServer({ 
         typeDefs, 
         resolvers,
-        context: ({ req, res }) => ({ req, res }) 
+        context: ({ req, res }) => ({ req, res })
     })
 
     app.use(cookieParser())
