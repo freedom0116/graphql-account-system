@@ -25,8 +25,7 @@ cd modern-graphql-tutorial
 yarn
 ```
 
-Next step, you should input the MONGE_URL, ACCESS_TOEKN_KEY, and REFRESH_TOKEN_KEY in .env.defaults
-You can get free cloud database for [MongoDB Altas](https://www.mongodb.com/cloud/atlas)
+Next, you should input the MONGE_URL, ACCESS_TOEKN_KEY, and REFRESH_TOKEN_KEY in .env.defaults. For mongoDB database, I recommend [MongoDB Altas](https://www.mongodb.com/cloud/atlas) which is a free cloud database or you can build your own with docker.
 
 Finally, if you follow the guidance above, try to the request to [http://localhost:4000](http://localhost:4000) and have fun!!
 
