@@ -11,7 +11,11 @@ export const typeDefs = gql`
         updateAccount(data: UpdateAccountInput): String!
         login(data: LoginInput): AccountOutput!
         logout: String!
+<<<<<<< HEAD
         checkToken(token: String!): String!
+=======
+        verifyAccount: verifyOutput
+>>>>>>> f0f129b0de242cc8b859a3b49e409d85d939dbb3
     }
 
     input CreateAccountInput {
@@ -34,6 +38,11 @@ export const typeDefs = gql`
     input LoginInput {
         email: String!
         password: String!
+    }
+
+    type verifyOutput {
+        accessToken: String!
+        data: Account!
     }
 
     type Account {

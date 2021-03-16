@@ -8,13 +8,9 @@ import { sendRefreshToken } from '../../auth/sendRefreshToken'
 const saltRounds = 10;
 
 const Mutation = {
-  createAccount: async (parent, { data }, context, info) => {
-    const result = {}
-    const emailTaken = await Account.findOne({ email: data.email })
-    
-    if(emailTaken){
-      throw new Error('Email has been used')
-    }
+  createAccount: async (parent, { data }, { res }, info) => {
+    const emailTaken = await Account.findOne({ email: data.email })    
+    if(emailTaken) throw new Error('Email has been used')
 
     const id = cryptoRandomString({ length: 10 })
     const password = bcrypt.hashSync(data.password, saltRounds)
@@ -28,7 +24,7 @@ const Mutation = {
       password: password,
       lastActive: onTime(),
       createDate: onTime(),
-      token: refreshToken
+      token: result.refreshToken
     }
 
     const newAccount = new Account(accountData)
@@ -71,6 +67,7 @@ const Mutation = {
     }
 
     const passwordCheck = await bcrypt.compare(data.password, account.password)
+    if(!passwordCheck) throw new Error('Please check your Email or password again')
 
     if(!passwordCheck){
       throw new Error('Wrong password')
@@ -83,13 +80,21 @@ const Mutation = {
     sendRefreshToken(res, result.refreshToken);
 
     return result
-  },
-  checkToken: (parent, { token }, context, info) => {
-    console.log(context.req.token)
-    const output = jwt.verify(token, ACCESS_TOKEN_KEY);
-    console.log(output)
+  }, 
+  logout: async (parent, args, { req, res }, info) => {
+    const refreshToken = req.cookies['refresh-token']
+    const account = await Account.findOne({ id: req.id })    
+    if(!account)throw new Error('Account not found')
 
-    return "OK"
+    if(account.token === '' || account.token != refreshToken)
+      throw new AuthenticationError('Token expired or wrong token')
+
+    await Account.updateOne({ id: req.id }, { token: '' })
+    
+    res.clearCookie('access-token')
+    res.clearCookie('refresh-token')
+
+    return refreshToken
   }
 }
 
