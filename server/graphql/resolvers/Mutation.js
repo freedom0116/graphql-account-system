@@ -1,12 +1,11 @@
 require('dotenv-defaults').config()
 import Account from '../../schema/Account'
 import bcrypt from 'bcrypt'
-import jwt from 'jsonwebtoken'
 import cryptoRandomString from 'crypto-random-string'
+import { createAccessToken, createRefreshToken } from '../../auth/auth';
+import { sendRefreshToken } from '../../auth/sendRefreshToken'
 
-const saltRounds = 10
-const ACCESS_TOKEN_KEY =  process.env.ACCESS_TOKEN_KEY
-const REFRESH_TOKEN_KEY = process.env.REFRESH_TOKEN_KEY
+const saltRounds = 10;
 
 const Mutation = {
   createAccount: async (parent, { data }, context, info) => {
@@ -19,11 +18,11 @@ const Mutation = {
 
     const id = cryptoRandomString({ length: 10 })
     const password = bcrypt.hashSync(data.password, saltRounds)
-    const accessToken = jwt.sign({ id: id }, ACCESS_TOKEN_KEY, { expiresIn: '15s' })
-    const refreshToken = jwt.sign({ id: id }, REFRESH_TOKEN_KEY)  
+    const accessToken = createAccessToken(id);
+    const refreshToken = createRefreshToken(id);
 
     const accountData = {
-      id: id,
+      _id: id,
       name: data.name,
       email: data.email,
       password: password,
@@ -35,13 +34,15 @@ const Mutation = {
     const newAccount = new Account(accountData)
     await newAccount.save()
 
+    sendRefreshToken(res, refreshToken);
+
     result.accessToken = accessToken
     result.refreshToken = refreshToken
 
     return result
   },
-  deleteAccount: async (parent, { id }, context, info) => {
-    const del = await Account.remove({ id: id })
+  deleteAccount: async (parent, args, context, info) => {
+    const del = await Account.remove({ _id: _id })
     
     if(!del.deletedCount){
       throw new Error('Account not found')
@@ -49,7 +50,7 @@ const Mutation = {
 
     return 'delete'
   },
-  updateAccount: async (parent, { id, data }, context, info) => {
+  updateAccount: async (parent, { data }, context, info) => {
     const password = bcrypt.hashSync(data.password, saltRounds)
 
     const updateData = {
@@ -58,26 +59,28 @@ const Mutation = {
       password: password
     }
 
-    await Account.updateOne({ id: id }, updateData)
+    await Account.updateOne({ _id: id }, updateData)
 
     return 'updated'
   },
-  login: async (parent, { data }, context, info) => {
+  login: async (parent, { data }, { res }, info) => {
     const account = await Account.findOne({ email: data.email })
     
     if(!account){
-      throw new Error('Please check your Email or password again')
+      throw new Error('Account not found')
     }
 
     const passwordCheck = await bcrypt.compare(data.password, account.password)
 
     if(!passwordCheck){
-      throw new Error('Please check your Email or password again')
+      throw new Error('Wrong password')
     }
-    
+
     const result = {}
-    result.accessToken = jwt.sign({ id: account.id }, ACCESS_TOKEN_KEY, { expiresIn: '15min' })
-    result.refreshToken = jwt.sign({ id: account.id }, REFRESH_TOKEN_KEY)  
+    result.accessToken = createAccessToken(account.id);
+    result.refreshToken = createRefreshToken(account.id);
+
+    sendRefreshToken(res, result.refreshToken);
 
     return result
   },
