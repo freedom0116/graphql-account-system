@@ -1,0 +1,10 @@
+.login {
+    width: 60vw;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+}
+
+.input {
+    margin: 10px;
+}

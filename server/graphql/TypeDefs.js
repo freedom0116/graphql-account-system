@@ -3,19 +3,16 @@ import { gql } from 'apollo-server-express'
 export const typeDefs = gql`
     type Query {
         account(email: String): [Account]
+        hello: String!
     }
 
     type Mutation {
         createAccount(data: CreateAccountInput!): AccountOutput!
         deleteAccount: String!
-        updateAccount(data: UpdateAccountInput): String!
+        updateAccount(data: UpdateAccountInput): Account!
         login(data: LoginInput): AccountOutput!
         logout: String!
-<<<<<<< HEAD
         checkToken(token: String!): String!
-=======
-        verifyAccount: verifyOutput
->>>>>>> f0f129b0de242cc8b859a3b49e409d85d939dbb3
     }
 
     input CreateAccountInput {

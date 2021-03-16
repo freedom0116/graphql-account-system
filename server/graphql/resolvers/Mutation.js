@@ -1,9 +1,10 @@
 require('dotenv-defaults').config()
 import Account from '../../schema/Account'
-import bcrypt from 'bcrypt'
+import { hashSync, compareSync } from 'bcrypt'
 import cryptoRandomString from 'crypto-random-string'
 import { createAccessToken, createRefreshToken } from '../../auth/auth';
 import { sendRefreshToken } from '../../auth/sendRefreshToken'
+import { verifyToken } from '../../auth/verifyToken';
 
 const saltRounds = 10;
 
@@ -13,7 +14,7 @@ const Mutation = {
     if(emailTaken) throw new Error('Email has been used')
 
     const id = cryptoRandomString({ length: 10 })
-    const password = bcrypt.hashSync(data.password, saltRounds)
+    const password = hashSync(data.password, saltRounds)
     const accessToken = createAccessToken(id);
     const refreshToken = createRefreshToken(id);
 
@@ -24,7 +25,7 @@ const Mutation = {
       password: password,
       lastActive: onTime(),
       createDate: onTime(),
-      token: result.refreshToken
+      token: refreshToken
     }
 
     const newAccount = new Account(accountData)
@@ -32,13 +33,12 @@ const Mutation = {
 
     sendRefreshToken(res, refreshToken);
 
-    result.accessToken = accessToken
-    result.refreshToken = refreshToken
-
-    return result
+    return { accessToken, refreshToken }
   },
   deleteAccount: async (parent, args, context, info) => {
-    const del = await Account.remove({ _id: _id })
+    await verifyToken(context)
+
+    const del = await Account.remove({ _id: context.userId })
     
     if(!del.deletedCount){
       throw new Error('Account not found')
@@ -47,17 +47,20 @@ const Mutation = {
     return 'delete'
   },
   updateAccount: async (parent, { data }, context, info) => {
-    const password = bcrypt.hashSync(data.password, saltRounds)
+    await verifyToken(context);
 
-    const updateData = {
-      name: data.name,
-      email: data.email,
-      password: password
+    const account = await Account.findOne({ _id: context.payload.userId });
+
+    if(!account){
+      throw new Error('Account not found');
     }
 
-    await Account.updateOne({ _id: id }, updateData)
+    if(data.name) account.name = data.name;
+    if(data.email) account.email = data.email;
+    if(data.password) account.password = hashSync(data.password, saltRounds);
 
-    return 'updated'
+    await Account.updateOne({ _id: account._id }, account);
+    return account;
   },
   login: async (parent, { data }, { res }, info) => {
     const account = await Account.findOne({ email: data.email })
@@ -66,7 +69,7 @@ const Mutation = {
       throw new Error('Account not found')
     }
 
-    const passwordCheck = await bcrypt.compare(data.password, account.password)
+    const passwordCheck = compareSync(data.password, account.password)
     if(!passwordCheck) throw new Error('Please check your Email or password again')
 
     if(!passwordCheck){
@@ -74,27 +77,31 @@ const Mutation = {
     }
 
     const result = {}
-    result.accessToken = createAccessToken(account.id);
-    result.refreshToken = createRefreshToken(account.id);
+    result.accessToken = createAccessToken(account._id);
+    result.refreshToken = createRefreshToken(account._id);
+
+    await Account.updateOne({ _id: account._id }, { refreshToken: result.refreshToken });
 
     sendRefreshToken(res, result.refreshToken);
 
     return result
   }, 
   logout: async (parent, args, { req, res }, info) => {
-    const refreshToken = req.cookies['refresh-token']
-    const account = await Account.findOne({ id: req.id })    
-    if(!account)throw new Error('Account not found')
+    const refreshToken = req.cookies['refresh-token'];
+    const account = await Account.findOne({ id: req.id })   ; 
+    if(!account){
+      throw new Error('Account not found');
+    }
 
-    if(account.token === '' || account.token != refreshToken)
-      throw new AuthenticationError('Token expired or wrong token')
+    if(account.token === '' || account.token != refreshToken){
+      throw new AuthenticationError('Token expired or wrong token');
+    }
 
-    await Account.updateOne({ id: req.id }, { token: '' })
+    await Account.updateOne({ id: req.id }, { token: '' });
     
-    res.clearCookie('access-token')
-    res.clearCookie('refresh-token')
+    res.clearCookie('refresh-token');
 
-    return refreshToken
+    return refreshToken;
   }
 }
 

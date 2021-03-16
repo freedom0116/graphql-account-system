@@ -29,7 +29,7 @@ const AccountSchema = new Schema({
         type: String,
         required: true
     },
-    token: {
+    refreshToken: {
         type: String
     }
 })

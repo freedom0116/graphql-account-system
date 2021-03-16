@@ -1,10 +1,9 @@
 import Account from '../../schema/Account'
-import verifyToken from '../../middleware/verifyToken'
-import generateToken from '../../middleware/generateToken'
+import { verifyToken } from '../../auth/verifyToken'
 
 const Query = {
-  account: async (parent, { email }, { req, res }, info) => {
-    await verifyToken(req, res)
+  account: async (parent, { email }, context, info) => {
+    await verifyToken(context)
     
     if(!email){
       return await Account.find()
@@ -12,7 +11,7 @@ const Query = {
 
     return await Account.find({ email: email })
   },
-
+  hello: () => "world!!!!"
 }
 
 export default Query;
