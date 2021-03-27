@@ -1,7 +1,5 @@
 require('dotenv-defaults').config()
-import { verify } from 'jsonwebtoken'
-import { AuthenticationError } from 'apollo-server-express'
-import Account from '../schema/Account'
+import { verify } from 'jsonwebtoken';
 
 export const verifyToken = async (context) => {
     const authorization = context.req.headers["authorization"];

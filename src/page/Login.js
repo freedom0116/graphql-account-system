@@ -9,16 +9,8 @@ export function Login () {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showErrorMsg, setShowErrorMsg] = useState(false);
-    const [login, { error, data }] = useMutation(LOGIN);
+    const [login] = useMutation(LOGIN);
     let history = useHistory();
-
-    useEffect(() => {
-        console.log(data);
-    }, [data])
-    
-    useEffect(() => {
-        console.log(error, "1")
-    }, [error])
 
     return (
         <div className="login">
@@ -41,7 +33,7 @@ export function Login () {
                 style={{ margin: '10px' }}
                 onClick={async () => {
                     try{                        
-                        await login({ 
+                        let token = await login({ 
                             variables: {
                                 input: {                            
                                     email: email,
@@ -49,7 +41,8 @@ export function Login () {
                                 }
                             }
                         })
-
+                        
+                        localStorage.setItem('token', token.data.login);
                         history.push('/');
                     } catch {
                         setShowErrorMsg(true)

@@ -8,7 +8,7 @@ import { resolvers } from './graphql/resolvers';
 import { typeDefs } from './graphql/TypeDefs';
 import Account from './schema/Account';
 import { createAccessToken, createRefreshToken } from './auth/auth'
-import { sendRefreshToken } from './auth/sendRefreshToken'
+import { sendRefreshToken } from './auth/sendRefreshToken';
 
 const startServer = async () => {
     const app = express();

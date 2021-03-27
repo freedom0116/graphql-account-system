@@ -76,15 +76,14 @@ const Mutation = {
       throw new Error('Wrong password')
     }
 
-    const result = {}
-    result.accessToken = createAccessToken(account._id);
-    result.refreshToken = createRefreshToken(account._id);
+    const accessToken = createAccessToken(account._id);
+    const refreshToken = createRefreshToken(account._id);
 
-    await Account.updateOne({ _id: account._id }, { refreshToken: result.refreshToken });
+    await Account.updateOne({ _id: account._id }, { refreshToken: refreshToken });
 
-    sendRefreshToken(res, result.refreshToken);
+    sendRefreshToken(res, refreshToken);
 
-    return result
+    return accessToken;
   }, 
   logout: async (parent, args, { req, res }, info) => {
     const refreshToken = req.cookies['refresh-token'];

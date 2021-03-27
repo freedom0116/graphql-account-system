@@ -4,13 +4,14 @@ export const typeDefs = gql`
     type Query {
         account(email: String): [Account]
         hello: String!
+        homePageStatus: String
     }
 
     type Mutation {
         createAccount(data: CreateAccountInput!): AccountOutput!
         deleteAccount: String!
         updateAccount(data: UpdateAccountInput): Account!
-        login(data: LoginInput): AccountOutput!
+        login(data: LoginInput): String!
         logout: String!
         checkToken(token: String!): String!
     }
