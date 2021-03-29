@@ -1,8 +1,8 @@
 require('dotenv-defaults').config()
 import { verify } from 'jsonwebtoken';
 
-export const verifyToken = async (context) => {
-    const authorization = context.req.headers["authorization"];
+export const verifyToken = (context) => {
+    const authorization = context.req.headers["authorization"] || '';
 
     if(!authorization){
         throw new Error("not authorization");

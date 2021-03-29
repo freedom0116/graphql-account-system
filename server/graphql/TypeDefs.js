@@ -13,7 +13,6 @@ export const typeDefs = gql`
         updateAccount(data: UpdateAccountInput): Account!
         login(data: LoginInput): String!
         logout: String!
-        checkToken(token: String!): String!
     }
 
     input CreateAccountInput {

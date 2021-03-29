@@ -3,7 +3,7 @@ import { verifyToken } from '../../auth/verifyToken'
 
 const Query = {
   account: async (parent, { email }, context, info) => {
-    await verifyToken(context);
+    verifyToken(context);
     
     if(!email){
       return await Account.find()
@@ -12,8 +12,9 @@ const Query = {
     return await Account.find({ email: email })
   },
   hello: () => "world!!!!",
-  homePageStatus: async (parent, { email }, context, info) => {
-    await verifyToken(context);
+  homePageStatus: async (parent, _, context, info) => {
+    verifyToken(context);
+    console.log(context.req.headers["authorization"])
 
     return "Authorization passed";
   }
