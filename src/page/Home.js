@@ -7,6 +7,7 @@ export function Home () {
     const [error, setError] = useState(false);
 
     const handleCheck = async () => {
+        console.log(localStorage.getItem('accessToken'))
         try {
             await refetch();
             setError(false);

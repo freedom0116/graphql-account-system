@@ -14,7 +14,6 @@ const Query = {
   hello: () => "world!!!!",
   homePageStatus: async (parent, _, context, info) => {
     verifyToken(context);
-    console.log(context.req.headers["authorization"])
 
     return "Authorization passed";
   }

@@ -9,9 +9,16 @@ import { typeDefs } from './graphql/TypeDefs';
 import Account from './schema/Account';
 import { createAccessToken, createRefreshToken } from './auth/auth'
 import { sendRefreshToken } from './auth/sendRefreshToken';
+import cors from "cors";
 
 const startServer = async () => {
     const app = express();
+    app.use(
+      cors({
+        origin: "http://localhost:3000",
+        credentials: true
+      })
+    );
     app.use(cookieParser());
 
     // Design to handle refreshing jwt token
@@ -67,7 +74,7 @@ const startServer = async () => {
         context: ({ req, res }) => ({ req, res }) 
     });
 
-    apolloServer.applyMiddleware({ app, path: '/' });
+    apolloServer.applyMiddleware({ app, path: '/', cors: false });
 
     app.listen({ port: process.env.PORT | 4000 }, () => {
         console.log(`The server is up on port ${process.env.PORT | 4000}!`)

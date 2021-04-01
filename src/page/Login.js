@@ -1,5 +1,5 @@
 import './Page.css'
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import TextField from '@material-ui/core/TextField';
 import { useMutation } from 'react-apollo';
 import { LOGIN } from '../graphql';
@@ -42,7 +42,7 @@ export function Login () {
                             }
                         })
                         
-                        localStorage.setItem('token', token.data.login);
+                        localStorage.setItem('accessToken', token.data.login);
                         history.push('/');
                     } catch {
                         setShowErrorMsg(true)
