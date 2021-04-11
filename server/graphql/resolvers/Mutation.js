@@ -33,7 +33,7 @@ const Mutation = {
 
     sendRefreshToken(res, refreshToken);
 
-    return { accessToken, refreshToken }
+    return accessToken
   },
   deleteAccount: async (parent, args, context, info) => {
     await verifyToken(context)
@@ -85,22 +85,14 @@ const Mutation = {
 
     return accessToken;
   }, 
-  logout: async (parent, args, { req, res }, info) => {
-    const refreshToken = req.cookies['refresh-token'];
-    const account = await Account.findOne({ id: req.id })   ; 
-    if(!account){
-      throw new Error('Account not found');
-    }
+  logout: async (parent, args, context, info) => { 
+    verifyToken(context);
 
-    if(account.token === '' || account.token != refreshToken){
-      throw new AuthenticationError('Token expired or wrong token');
-    }
-
-    await Account.updateOne({ id: req.id }, { token: '' });
+    await Account.updateOne({ id: context.payload.userId }, { token: '' });
     
-    res.clearCookie('refresh-token');
+    sendRefreshToken(context.res, '');
 
-    return refreshToken;
+    return 'Logout Success';
   }
 }
 

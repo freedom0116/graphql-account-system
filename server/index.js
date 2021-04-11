@@ -71,7 +71,11 @@ const startServer = async () => {
     const apolloServer = new ApolloServer({ 
         typeDefs, 
         resolvers,
-        context: ({ req, res }) => ({ req, res }) 
+        context: ({ req, res }) => ({ 
+            req: req,
+            res: res,
+            cookies: req.headers.authorization
+        }) 
     });
 
     apolloServer.applyMiddleware({ app, path: '/', cors: false });

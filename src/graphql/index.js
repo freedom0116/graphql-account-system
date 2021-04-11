@@ -1,3 +1,5 @@
-export { HELLO } from './hello.js';
-export { LOGIN } from './login.js';
-export { HOME_STATUS } from './homeStatus.js';
+export { HELLO } from './hello';
+export { LOGIN } from './login';
+export { LOGOUT } from './logout';
+export { REGISTER } from './register';
+export { HOME_STATUS } from './homeStatus';

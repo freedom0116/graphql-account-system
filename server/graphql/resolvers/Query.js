@@ -3,7 +3,7 @@ import { verifyToken } from '../../auth/verifyToken'
 
 const Query = {
   account: async (parent, { email }, context, info) => {
-    verifyToken(context);
+    // verifyToken(context);
     
     if(!email){
       return await Account.find()

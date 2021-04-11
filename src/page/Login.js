@@ -1,5 +1,5 @@
 import './Page.css'
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import TextField from '@material-ui/core/TextField';
 import { useMutation } from 'react-apollo';
 import { LOGIN } from '../graphql';
@@ -12,6 +12,37 @@ export function Login () {
     const [login] = useMutation(LOGIN);
     let history = useHistory();
 
+    const passwordRef = useRef();
+
+    const passwordFocus = input => {
+        if(input === 'Enter')
+            passwordRef.current.focus();
+    }
+
+    const sendLogin = async input => {
+        if(input === 'Enter') {
+            await handleLogin();
+        }
+    }
+
+    const handleLogin = async () => {
+        try{                        
+            let token = await login({ 
+                variables: {
+                    input: {                            
+                        email: email,
+                        password: password
+                    }
+                }
+            })
+            
+            localStorage.setItem('accessToken', token.data.login);
+            history.push('/');
+        } catch {
+            setShowErrorMsg(true)
+        }
+    }
+
     return (
         <div className="login">
             {!showErrorMsg ? <div></div> : <div>Check your email and password</div>}
@@ -21,6 +52,7 @@ export function Login () {
                 value={email}
                 style={{ margin: '10px' }}
                 onChange={e => setEmail(e.target.value)}
+                onKeyDown={e => passwordFocus(e.key)}
              />
              <TextField 
                 label="Password" 
@@ -28,26 +60,12 @@ export function Login () {
                 value={password}
                 style={{ margin: '10px' }}
                 onChange={e => setPassword(e.target.value)}
+                onKeyDown={async e => sendLogin(e.key)}
+                inputRef={passwordRef}
               />
             <button 
                 style={{ margin: '10px' }}
-                onClick={async () => {
-                    try{                        
-                        let token = await login({ 
-                            variables: {
-                                input: {                            
-                                    email: email,
-                                    password: password
-                                }
-                            }
-                        })
-                        
-                        localStorage.setItem('accessToken', token.data.login);
-                        history.push('/');
-                    } catch {
-                        setShowErrorMsg(true)
-                    }
-                }}
+                onClick={async () => handleLogin()}
             >
                 go to home
             </button>
