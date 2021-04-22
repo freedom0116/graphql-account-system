@@ -5,7 +5,7 @@ import { useMutation } from 'react-apollo';
 import { LOGIN } from '../graphql';
 import { useHistory } from "react-router-dom";
 
-export function Login () {
+export function Login (props) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showErrorMsg, setShowErrorMsg] = useState(false);
@@ -37,6 +37,7 @@ export function Login () {
             })
             
             localStorage.setItem('accessToken', token.data.login);
+            props.setIsLogin(true);
             history.push('/');
         } catch {
             setShowErrorMsg(true)

@@ -1,13 +1,17 @@
 import { useQuery } from 'react-apollo';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { HOME_STATUS } from '../graphql'
 
-export function Home () {
+export function Home (props) {
     const { error: queryError, refetch } = useQuery(HOME_STATUS);
     const [error, setError] = useState(false);
 
+    useEffect(() => {
+        !localStorage.getItem('accessToken') ? props.setIsLogin(false) : props.setIsLogin(true);
+        handleCheck();
+    })
+
     const handleCheck = async () => {
-        console.log(localStorage.getItem('accessToken'))
         try {
             await refetch();
             setError(false);

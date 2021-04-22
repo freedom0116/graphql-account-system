@@ -5,7 +5,7 @@ import { useMutation } from 'react-apollo';
 import { REGISTER } from '../graphql';
 import { useHistory } from "react-router-dom";
 
-export function Register () {
+export function Register (props) {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -45,6 +45,7 @@ export function Register () {
             })
 
             localStorage.setItem('accessToken', token.data.createAccount);
+            props.setIsLogin(true);
             history.push('/');
         } catch {
             setShowErrorMsg(true)
